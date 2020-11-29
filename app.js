@@ -3,12 +3,15 @@ const app = express();
 const Joi = require('@hapi/joi');
 const movies = require('./movies');
 
-var neo4j = require('neo4j-driver')
+var neo4j = require('neo4j-driver');
+var driver = neo4j.driver('bolt://54.237.207.193:33144', neo4j.auth.basic('neo4j', 'designation-cable-creeks'));
+
+/*
 var driver = neo4j.driver(
     'bolt://localhost:7687',
     neo4j.auth.basic('neo4j', '12345')
   )
-
+*/
 app.use(express.json());
 
 app.use('/abc', movies);
@@ -40,7 +43,7 @@ app.get('/create', (req,res) => {
     const session = driver.session();
     session
     .run('CREATE (n:Person { name: $name_param, title: $role_param })', {
-        name_param: "Cerati",
+        name_param: "Billie",
         role_param: "Musician"
     }).subscribe({
         onCompleted: () => {
