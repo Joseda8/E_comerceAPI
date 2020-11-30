@@ -1,0 +1,5 @@
+db.client.insertMany([
+  {username: "Joseda8", password: "test", name: "Jose Montoya Salazar", birthday: "19980815", gender: "M"},
+  {username: "Billie_of_suburbia", password: "green_day", name: "Billie Joe Armstrong", birthday: "19720217", gender: "M"}
+
+  ])

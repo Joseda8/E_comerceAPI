@@ -1,0 +1,11 @@
+db.brand.insertMany([
+  {name: 'Nike'},
+  {name: 'Adidas'},
+  {name: 'Reebok'},
+  {name: 'Puma'},
+  {name: 'New Balance'},
+  {name: 'ASICS'},
+  {name: 'Salomon'},
+  {name: 'Champion'},
+  {name: 'Converse'}
+  ])

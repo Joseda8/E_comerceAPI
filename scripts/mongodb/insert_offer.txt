@@ -1,0 +1,8 @@
+db.offer.insertMany([
+  {name: "Mundial", description: "Promocion para aprovechar la fiebre mundialista", product: "Brazuca", info: {type: "Descuento", condition: 0.25}, 
+  start: "20220101", end: "20230101"},
+
+  {name: "Chunche", description: "Foto con El Chunche", product: "Tenis Predator", info: {type: "Regalia", condition: "Foto con Mauricio Montero al comprar estas tenis"}, 
+  start: "20220315", end: "20220316"}
+
+  ])

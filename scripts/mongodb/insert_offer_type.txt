@@ -1,0 +1,4 @@
+db.offer_type.insertMany([
+  {name: 'Descuento'},
+  {name: 'Regalia'}
+  ])

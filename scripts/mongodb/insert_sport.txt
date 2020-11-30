@@ -1,0 +1,9 @@
+db.sport.insertMany([
+  {name: 'Futbol'},
+  {name: 'Basketball'},
+  {name: 'Tenis'},
+  {name: 'Skate'},
+  {name: 'Baseball'},
+  {name: 'Natacion'},
+  {name: 'Gimnasia'}
+  ])

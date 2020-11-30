@@ -3,8 +3,7 @@ const app = express();
 const Joi = require('@hapi/joi');
 const movies = require('./movies');
 
-var neo4j = require('neo4j-driver');
-var driver = neo4j.driver('bolt://54.237.207.193:33144', neo4j.auth.basic('neo4j', 'designation-cable-creeks'));
+const db_neo = require("./neo");
 
 /*
 var driver = neo4j.driver(
@@ -12,49 +11,26 @@ var driver = neo4j.driver(
     neo4j.auth.basic('neo4j', '12345')
   )
 */
+
 app.use(express.json());
 
 app.use('/abc', movies);
 
 
-app.get('/', (req,res) => {
-    const session = driver.session();
-    session
-    .run('MATCH (n) RETURN n')
-    .subscribe({
-    onNext: record => {
-        record._fields.forEach((element, index) => {
-        console.log(element.labels);
-        console.log(element.properties);
-    });
-    },
-    onCompleted: () => {
-        session.close()
-    },
-    onError: error => {
-        console.log(error)
-    }
-    });
+app.get('/', (req, res) => {
 
+    db_neo.do_query("GET_ALL", {
+        name: "Billie",
+        role: "Musician"
+    }, (data) => {
+        data.forEach((element, index) => {
+            console.log(element);
+            //console.log(element.labels);
+            //console.log(element.properties);
+        });
+    });
+    
     res.send('Holi');
-})
-
-app.get('/create', (req,res) => {
-    const session = driver.session();
-    session
-    .run('CREATE (n:Person { name: $name_param, title: $role_param })', {
-        name_param: "Billie",
-        role_param: "Musician"
-    }).subscribe({
-        onCompleted: () => {
-            session.close()
-        },
-        onError: error => {
-            console.log(error)
-        }
-    });
-
-    res.send('Create');
 })
 
 const port = process.env.PORT || '5000';

@@ -1,0 +1,4 @@
+db.product_type.insertMany([
+  {name: 'Vestimenta'},
+  {name: 'Articulo'}
+  ])
