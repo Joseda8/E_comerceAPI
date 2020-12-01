@@ -22,7 +22,7 @@ function do_query(query, info, dataCallback){
             break;
         default:
             session.close();
-            dataCallback("La consulta no es correcta");
+            dataCallback("Consulta no encontrada");
       }
 
       session.run(query_raw, query_info)
