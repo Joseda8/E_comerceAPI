@@ -38,17 +38,21 @@ app.get('/neo', (req, res) => {
     res.send('Neo');
 })
 
-app.get('/mongo', (req, res) => {
+app.get('/get_collection', (req, res) => {
+
+    const {collection} = req.query;
 
     const info = {
-        collection: "brand"
+        collection: collection
     };
 
     db_mongo.do_query("FIND", info, (data) => {
-        console.log(data);
+        if(data.length==0){
+            res.sendStatus(404);
+        }else{
+            res.json(data);
+        }
     });
-    
-    res.send('Mongo');
 })
 
 
@@ -64,6 +68,42 @@ app.post("/insert_product", (req, res) => {
     */
 
     res.sendStatus(200);
+});
+
+
+/*
+CLIENTES
+*/
+app.post('/login', (req, res) => {
+
+    const client_to_login = req.body;
+
+    const info = {
+        username: client_to_login.username,
+        password: client_to_login.password
+    };
+
+    db_mongo.do_query("LOGIN", info, (data) => {
+        if(data.length==0){
+            res.sendStatus(401);
+        }else{
+            res.json(data);
+        }
+    });
+})
+
+app.post("/register_client", (req, res) => {
+    const new_client = req.body;
+
+    db_mongo.do_query("FIND_CLIENT", {username: new_client.username}, (data) => {
+        if(data.length==0){
+            db_mongo.do_query("REGISTER_CLIENT", new_client, (data) => {
+                res.sendStatus(200);
+            });
+        }else{
+            res.sendStatus(409);
+        }
+    });
 });
 
 

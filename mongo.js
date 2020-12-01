@@ -14,6 +14,7 @@ function do_query(query, info, dataCallback){
 
         } else {
             const dbObject = dbInstance.db(dbName);
+            const client_collection = "client";
 
             switch(query) {
 
@@ -22,6 +23,30 @@ function do_query(query, info, dataCallback){
                     dbCollection.find({}, { projection: {_id:0}} ).toArray(function(error, result) {
                         if(error){console.log(error);}
                         dataCallback(result);
+                    });
+                    break;
+
+                case "FIND_CLIENT":
+                    dbCollection = dbObject.collection(client_collection); 
+                    dbCollection.find({username: info.username}, { projection: {_id:0}} ).toArray(function(error, result) {
+                        if(error){console.log(error);}
+                        dataCallback(result);
+                    });
+                    break;
+
+                case "LOGIN":
+                    dbCollection = dbObject.collection(client_collection); 
+                    dbCollection.find({username: info.username, password: info.password}, { projection: {_id:0}} ).toArray(function(error, result) {
+                        if(error){console.log(error);}
+                        dataCallback(result);
+                    });
+                    break;
+
+                case "REGISTER_CLIENT":
+                    dbCollection = dbObject.collection(client_collection); 
+                    dbCollection.insertOne(info, (error, result) => {
+                        if(error){dataCallback(result);}
+                        else{dataCallback(200);}
                     });
                     break;
 
