@@ -1,5 +1,7 @@
 const neo4j = require('neo4j-driver');
-var driver = neo4j.driver('bolt://54.237.207.193:33144', neo4j.auth.basic('neo4j', 'designation-cable-creeks'));
+var driver = neo4j.driver('bolt://100.26.161.61:33173', neo4j.auth.basic('neo4j', 'class-solution-winters'));
+
+//MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r
 
 function do_query(query, info, dataCallback){
 
@@ -20,6 +22,20 @@ function do_query(query, info, dataCallback){
         case "TEST":
             query_raw = "match(p:Person {name: 'Kevin Pollak'})-[c:ACTED_IN]-(m:Movie) return m";
             break;
+
+
+        case "NEW_PRODUCT":
+            query_raw = "CREATE (prdct:product { name: $name_param })";
+            query_info = {
+                name_param: info.name,
+            };
+            break;
+        case "REGISTER_CLIENT":
+            query_raw = "CREATE (c:client { name: $name_param })";
+            query_info = {
+                name_param: info.username,
+            };
+            break;
         default:
             session.close();
             dataCallback("Consulta no encontrada");
@@ -31,7 +47,7 @@ function do_query(query, info, dataCallback){
               dataCallback(record._fields);
           },
           onCompleted: () => {
-              session.close()
+              session.close();
           },
           onError: error => {
               dataCallback(error);

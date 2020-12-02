@@ -15,6 +15,7 @@ function do_query(query, info, dataCallback){
         } else {
             const dbObject = dbInstance.db(dbName);
             const client_collection = "client";
+            const product_collection = "product";
 
             switch(query) {
 
@@ -45,7 +46,31 @@ function do_query(query, info, dataCallback){
                 case "REGISTER_CLIENT":
                     dbCollection = dbObject.collection(client_collection); 
                     dbCollection.insertOne(info, (error, result) => {
-                        if(error){dataCallback(result);}
+                        if(error){dataCallback(error);}
+                        else{dataCallback(200);}
+                    });
+                    break;
+
+                case "FIND_PRODUCT":
+                    dbCollection = dbObject.collection(product_collection); 
+                    dbCollection.find({name: info.name}, { projection: {_id:0}} ).toArray(function(error, result) {
+                        if(error){console.log(error);}
+                        dataCallback(result);
+                    });
+                    break;
+
+                case "NEW_PRODUCT":
+                    dbCollection = dbObject.collection(product_collection); 
+                    dbCollection.insertOne(info, (error, result) => {
+                        if(error){dataCallback(error);}
+                        else{dataCallback(200);}
+                    });
+                    break;
+
+                case "ADD_OFFER":
+                    dbCollection = dbObject.collection(product_collection); 
+                    dbCollection.updateOne({ name: info.name }, { $set: {offer: info.offer} }, (error, result) => {
+                        if(error){dataCallback(error);}
                         else{dataCallback(200);}
                     });
                     break;

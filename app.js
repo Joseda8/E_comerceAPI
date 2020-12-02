@@ -5,6 +5,7 @@ const movies = require('./movies');
 
 const db_neo = require("./neo");
 const db_mongo = require("./mongo");
+const neo = require('./neo');
 
 /*
 var driver = neo4j.driver(
@@ -13,9 +14,9 @@ var driver = neo4j.driver(
   )
 */
 
-app.use(express.json());
-//app.use(express.json({limit: '50mb'}));
-//app.use(express.urlencoded({limit: '50mb'}));
+//app.use(express.json());
+app.use(express.json({limit: '50mb'}));
+app.use(express.urlencoded({limit: '50mb'}));
 
 app.use('/abc', movies);
 
@@ -27,7 +28,7 @@ app.get('/neo', (req, res) => {
         role: "Musician"
     };
 
-    db_neo.do_query("GET_ALL", info, (data) => {
+    db_neo.do_query("CREATE", info, (data) => {
         data.forEach((element, index) => {
             console.log(element);
             //console.log(element.labels);
@@ -55,19 +56,59 @@ app.get('/get_collection', (req, res) => {
     });
 })
 
+/*
+ADMINISTRADORES
+*/
+app.get('/find_product', (req, res) => {
+
+    const {product_name} = req.query;
+
+    const info = {
+        name: product_name
+    };
+
+    db_mongo.do_query("FIND_PRODUCT", info, (data) => {
+        if(data.length==0){
+            res.sendStatus(404);
+        }else{
+            res.json(data);
+        }
+    });
+})
 
 app.post("/insert_product", (req, res) => {
     const new_product = req.body;
 
-    console.log(new_product);
-
-    /*
-    db.do_query_to_cluster(continent, "REGISTER", new_user, (data) => {
-        console.log(data);
+    db_mongo.do_query("NEW_PRODUCT", new_product, (data) => {
+        if(data==200){
+            db_neo.do_query("NEW_PRODUCT", {name: new_product.name}, data);
+            res.sendStatus(200);
+        }else{
+            res.sendStatus(400);
+        }
     });
-    */
+});
 
-    res.sendStatus(200);
+app.put("/add_offer", (req, res) => {
+    const {product_name} = req.query;
+    const offer_info = req.body;
+
+    console.log(product_name);
+    console.log(offer_info);
+
+    const info = {
+        name: product_name,
+        offer: offer_info
+    };
+
+    db_mongo.do_query("ADD_OFFER", info, (data) => {
+        if(data==200){
+            res.sendStatus(200);
+        }else{
+            res.sendStatus(400);
+        }
+    });
+
 });
 
 
@@ -97,6 +138,7 @@ app.post("/register_client", (req, res) => {
 
     db_mongo.do_query("FIND_CLIENT", {username: new_client.username}, (data) => {
         if(data.length==0){
+            db_neo.do_query("REGISTER_CLIENT", {username: new_client.username}, data);
             db_mongo.do_query("REGISTER_CLIENT", new_client, (data) => {
                 res.sendStatus(200);
             });
