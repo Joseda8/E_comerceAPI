@@ -59,6 +59,15 @@ function do_query(query, info, dataCallback){
                     });
                     break;
 
+                case "FIND_PRODUCTS":
+                    dbCollection = dbObject.collection(product_collection); 
+
+                    dbCollection.find({"name": {$in: info}}, { projection: {_id:0, name:1, price:1, units:1, offer:1}} ).toArray(function(error, result) {
+                        if(error){console.log(error);}
+                        dataCallback(result);
+                    });
+                    break;
+
                 case "NEW_PRODUCT":
                     dbCollection = dbObject.collection(product_collection); 
                     dbCollection.insertOne(info, (error, result) => {
@@ -67,9 +76,17 @@ function do_query(query, info, dataCallback){
                     });
                     break;
 
+                case "UPDATE_INVENTORY":
+                    dbCollection = dbObject.collection(product_collection); 
+                    dbCollection.updateOne({ name: info.name }, { $set: {units: info.units} }, (error, result) => {
+                        if(error){dataCallback(error);}
+                        else{dataCallback(200);}
+                    });
+                    break;              
+
                 case "ADD_OFFER":
                     dbCollection = dbObject.collection(product_collection); 
-                    dbCollection.updateOne({ name: info.name }, { $set: {offer: info.offer} }, (error, result) => {
+                    dbCollection.updateOne({ name: info.name }, { $push: {offer: info.offer} }, (error, result) => {
                         if(error){dataCallback(error);}
                         else{dataCallback(200);}
                     });

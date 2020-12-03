@@ -1,11 +1,12 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const Joi = require('@hapi/joi');
 const movies = require('./movies');
 
 const db_neo = require("./neo");
 const db_mongo = require("./mongo");
-const neo = require('./neo');
+const util = require("./util");
 
 /*
 var driver = neo4j.driver(
@@ -17,6 +18,7 @@ var driver = neo4j.driver(
 //app.use(express.json());
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb'}));
+app.use(cors());
 
 app.use('/abc', movies);
 
@@ -93,9 +95,6 @@ app.put("/add_offer", (req, res) => {
     const {product_name} = req.query;
     const offer_info = req.body;
 
-    console.log(product_name);
-    console.log(offer_info);
-
     const info = {
         name: product_name,
         offer: offer_info
@@ -147,6 +146,64 @@ app.post("/register_client", (req, res) => {
         }
     });
 });
+
+
+app.post('/add_purchase', (req, res) => {
+
+    const purchase_info = req.body;
+    var products = [];
+    var ERROR = false;
+
+    purchase_info.products.forEach((prdct) => {
+        products.push(prdct.name);
+    });
+
+    db_mongo.do_query("FIND_PRODUCTS", products, (products_info) => {
+        console.log("Productos ", products_info);
+        console.log("Compra ", purchase_info);
+
+        purchase_info.products.forEach((purchc) => {
+            products_info.forEach((prdct) => {
+                if(prdct.name == purchc.name){
+                    if(prdct.units - purchc.amount < 0){
+                        ERROR = true;
+                    }
+                }
+            });
+        });
+
+        if(ERROR){
+            res.sendStatus(409);
+        }else{
+            var cost = 0;
+            purchase_info.products.forEach((purchc) => {
+                products_info.forEach((prdct) => {
+                    if(prdct.name == purchc.name){
+                        let this_cost = prdct.price * purchc.amount;
+                        let discount = 0;
+                        if(prdct.offer !== undefined){
+
+                            prdct.offer.forEach((offer) => {
+                                if(offer.info.type == "Descuento"){
+                                    discount = offer.info.condition;
+                                }
+                            });
+                            
+                        }
+                        cost += this_cost - this_cost*discount;
+                        //db_mongo.do_query("UPDATE_INVENTORY", {name: prdct.name, units: prdct.units - purchc.amount}, (data) => {});
+                    }
+                });
+            });
+            console.log(cost);
+            db_neo.do_query("AMOUNT_PURCHASE", null, (amount_purchase) => {
+                console.log(amount_purchase[0].low);
+            });
+            res.sendStatus(200);
+        }
+    });
+
+})
 
 
 const port = process.env.PORT || '5000';
