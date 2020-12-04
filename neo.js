@@ -93,6 +93,17 @@ function do_query(query, info, dataCallback){
             }
             break;        
 
+        case "COUNT_SALES":
+            query_raw = "match(prdt: product) -[r:buyed]-(purch: purchase) return prdt, sum(r.amount) as amount";
+            break;
+
+        case "COMMON_PURCHASE":
+            query_raw = "MATCH(clt:client {username: $username_param})-[r:buy]-(purch:purchase) MATCH(purch)-[b:sell]-(prdt:product) MATCH(prdt)-[c:buyed]-(purch_2: purchase) MATCH(clt_1: client)-[d:buy]-(purch_2) WHERE NOT(clt_1.username = $username_param) return clt_1, prdt";
+            query_info = {
+                username_param: info.username
+            };
+            break;
+
         default:
             session.close();
             dataCallback("Consulta no encontrada");

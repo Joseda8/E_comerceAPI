@@ -20,27 +20,6 @@ app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb'}));
 app.use(cors());
 
-app.use('/abc', movies);
-
-
-app.get('/neo', (req, res) => {
-
-    const info = {
-        name: "Billie",
-        role: "Musician"
-    };
-
-    db_neo.do_query("CREATE", info, (data) => {
-        data.forEach((element, index) => {
-            console.log(element);
-            //console.log(element.labels);
-            //console.log(element.properties);
-        });
-    });
-    
-    res.send('Neo');
-})
-
 app.get('/get_collection', (req, res) => {
 
     const {collection} = req.query;
@@ -85,6 +64,59 @@ app.post("/client_history", (req, res) => {
         }
     });;
 });
+
+app.get("/count_sales", (req, res) => {
+    db_neo.do_query("COUNT_SALES", null, (data) => {
+        var response = [];
+        
+        if(data.length == 0){
+            res.sendStatus(404);
+        }else{
+            data.forEach((prdct) => {
+                response.push({
+                    name: prdct[0].properties.name, 
+                    username: prdct[0].properties.username, 
+                    products: prdct[1],
+                });
+            });
+            res.json(data);
+        }
+        
+    });;
+});
+
+app.get('/common_purchase', (req, res) => {
+
+    const {username} = req.query;
+
+    const info = {
+        username: username
+    };
+
+    db_neo.do_query("COMMON_PURCHASE", info, (data) => {
+        var response = {};
+        
+        if(data.length == 0){
+            res.sendStatus(404);
+        }else{
+            data.forEach((client) => {
+                const username = client[0].properties.username;
+                if(response[username]==undefined){
+                    response[username] = {
+                        username: client[0].properties.username, 
+                        name: client[0].properties.name, 
+                        products: []
+                    }
+                }
+
+                if(!response[username].products.includes(client[1].properties.name)){
+                    response[username].products.push(client[1].properties.name);
+                }
+            });
+            res.json(response);
+        }
+    });;
+})
 
 app.get('/find_product', (req, res) => {
 
