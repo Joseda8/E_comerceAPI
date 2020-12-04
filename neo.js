@@ -81,10 +81,9 @@ function do_query(query, info, dataCallback){
 
         case "SHOPPING_HISTORY":
             query_name = "MATCH(clt:client {name: $name_param})-[r:buy]-(purch:purchase) match(purch)-[b:sell]-(prdt:product) return purch, prdt, b";
-            query_usr_name = "MATCH(clt:client {username: $username_param})-[r:buy]-(purch:purchase) match(purch)-[b:sell]-(prdt:product) return purch, prdt, b";
+            query_usr_name = "MATCH(clt:client {username: $name_param})-[r:buy]-(purch:purchase) match(purch)-[b:sell]-(prdt:product) return purch, prdt, b";
             query_info = {
                 name_param: info.name,
-                username_param: info.username
             };
             if(info.query=="NAME"){
                 query_raw = query_name;
