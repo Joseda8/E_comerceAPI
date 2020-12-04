@@ -39,7 +39,7 @@ function do_query(query, info, dataCallback){
             break;
 
         case "RELATE_PURCHASE_CLIENT":
-            query_raw = "MATCH(p:purchase{id: $id_param}),(c:client{name: $username_param})CREATE(c) -[r:buy]->(p)";
+            query_raw = "MATCH(p:purchase{id: $id_param}),(c:client{username: $username_param})CREATE(c) -[r:buy]->(p)";
             query_info = {
                 id_param: info.id,
                 username_param: info.username
@@ -72,26 +72,40 @@ function do_query(query, info, dataCallback){
             break;
 
         case "REGISTER_CLIENT":
-            query_raw = "CREATE (c:client { name: $name_param })";
+            query_raw = "CREATE (c:client { name: $name_param, username: $username_param })";
             query_info = {
-                name_param: info.username,
+                name_param: info.name,
+                username_param: info.username
             };
             break;
+
+        case "SHOPPING_HISTORY":
+            query_name = "MATCH(clt:client {name: $name_param})-[r:buy]-(purch:purchase) match(purch)-[b:sell]-(prdt:product) return purch, prdt, b";
+            query_usr_name = "MATCH(clt:client {username: $username_param})-[r:buy]-(purch:purchase) match(purch)-[b:sell]-(prdt:product) return purch, prdt, b";
+            query_info = {
+                name_param: info.name,
+                username_param: info.username
+            };
+            if(info.query=="NAME"){
+                query_raw = query_name;
+            }else if(info.query=="USERNAME"){
+                query_raw = query_usr_name;
+            }
+            break;        
 
         default:
             session.close();
             dataCallback("Consulta no encontrada");
       }
 
-      var DID_CALLBACK = false;
+      var response = []
       session.run(query_raw, query_info)
       .subscribe({
           onNext: record => {
-            DID_CALLBACK = true;
-            dataCallback(record._fields);
+              response.push(record._fields);
           },
           onCompleted: () => {
-              if(!DID_CALLBACK){dataCallback("Terminado")}
+              dataCallback(response);
               session.close();
           },
           onError: error => {

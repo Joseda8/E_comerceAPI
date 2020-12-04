@@ -61,6 +61,31 @@ app.get('/get_collection', (req, res) => {
 /*
 ADMINISTRADORES
 */
+
+app.post("/client_history", (req, res) => {
+    const client_to_find = req.body;
+
+    db_neo.do_query("SHOPPING_HISTORY", client_to_find, (data) => {
+        var response = {};
+        if(data.length == 0){
+            res.sendStatus(404);
+        }else{
+            data.forEach((prdct) => {
+                const purch_id = prdct[0].properties.id;
+                if(response[purch_id]==undefined){
+                    response[purch_id] = {
+                        date: prdct[0].properties.date, 
+                        cost: prdct[0].properties.cost,
+                        products: []
+                    }
+                }
+                response[purch_id].products.push({name: prdct[1].properties.name, amount: prdct[2].properties.amount});
+            });
+            res.json(response);
+        }
+    });;
+});
+
 app.get('/find_product', (req, res) => {
 
     const {product_name} = req.query;
@@ -137,7 +162,7 @@ app.post("/register_client", (req, res) => {
 
     db_mongo.do_query("FIND_CLIENT", {username: new_client.username}, (data) => {
         if(data.length==0){
-            db_neo.do_query("REGISTER_CLIENT", {username: new_client.username}, (data) => {});
+            db_neo.do_query("REGISTER_CLIENT", {name: new_client.name, username: new_client.username}, (data) => {});
             db_mongo.do_query("REGISTER_CLIENT", new_client, (data) => {
                 res.sendStatus(200);
             });
@@ -146,7 +171,6 @@ app.post("/register_client", (req, res) => {
         }
     });
 });
-
 
 app.post('/add_purchase', (req, res) => {
 
@@ -193,11 +217,11 @@ app.post('/add_purchase', (req, res) => {
                 });
             });
             db_neo.do_query("AMOUNT_PURCHASE", null, (amount_purchase) => {
-                db_neo.do_query("ADD_PURCHASE", {id: amount_purchase[0].low, date: purchase_info.date, cost: cost}, (data) => {
-                    db_neo.do_query("RELATE_PURCHASE_CLIENT", {id: amount_purchase[0].low, username: purchase_info.client}, (data) => {
+                db_neo.do_query("ADD_PURCHASE", {id: amount_purchase[0][0].low, date: purchase_info.date, cost: cost}, (data) => {
+                    db_neo.do_query("RELATE_PURCHASE_CLIENT", {id: amount_purchase[0][0].low, username: purchase_info.client}, (data) => {
                         purchase_info.products.forEach((purchc) => {
-                            db_neo.do_query("PRODUCT_BUYED", {id: amount_purchase[0].low, prod_name: purchc.name, amount: purchc.amount}, (data) => {});
-                            db_neo.do_query("PRODUCT_SELL", {id: amount_purchase[0].low, prod_name: purchc.name, amount: purchc.amount}, (data) => {});
+                            db_neo.do_query("PRODUCT_BUYED", {id: amount_purchase[0][0].low, prod_name: purchc.name, amount: purchc.amount}, (data) => {});
+                            db_neo.do_query("PRODUCT_SELL", {id: amount_purchase[0][0].low, prod_name: purchc.name, amount: purchc.amount}, (data) => {});
                         });
                     });
                 });
