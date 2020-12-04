@@ -30,10 +30,37 @@ function do_query(query, info, dataCallback){
             break;
 
         case "ADD_PURCHASE":
-            query_raw = "CREATE (n:purchase { date: $date_param, cost: $cost_param })";
+            query_raw = "CREATE (n:purchase { id: $id_param, date: $date_param, cost: $cost_param })";
             query_info = {
+                id_param: info.id,
                 date_param: info.date,
                 cost_param: info.cost
+            };
+            break;
+
+        case "RELATE_PURCHASE_CLIENT":
+            query_raw = "MATCH(p:purchase{id: $id_param}),(c:client{name: $username_param})CREATE(c) -[r:buy]->(p)";
+            query_info = {
+                id_param: info.id,
+                username_param: info.username
+            };
+            break;
+
+        case "PRODUCT_BUYED":
+            query_raw = "MATCH(prd:product {name: $prd_param}), (purch: purchase {id: $purch_param}) CREATE (prd)-[r:buyed {amount: $amount_param}]->(purch)";
+            query_info = {
+                purch_param: info.id,
+                prd_param: info.prod_name,
+                amount_param: info.amount
+            };
+            break;
+
+        case "PRODUCT_SELL":
+            query_raw = "MATCH(prd:product {name: $prd_param}), (purch: purchase {id: $purch_param}) CREATE (purch)-[r:sell {amount: $amount_param}]->(prd)";
+            query_info = {
+                purch_param: info.id,
+                prd_param: info.prod_name,
+                amount_param: info.amount
             };
             break;
 
@@ -56,12 +83,15 @@ function do_query(query, info, dataCallback){
             dataCallback("Consulta no encontrada");
       }
 
+      var DID_CALLBACK = false;
       session.run(query_raw, query_info)
       .subscribe({
           onNext: record => {
+            DID_CALLBACK = true;
             dataCallback(record._fields);
           },
           onCompleted: () => {
+              if(!DID_CALLBACK){dataCallback("Terminado")}
               session.close();
           },
           onError: error => {

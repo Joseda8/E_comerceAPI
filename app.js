@@ -83,7 +83,7 @@ app.post("/insert_product", (req, res) => {
 
     db_mongo.do_query("NEW_PRODUCT", new_product, (data) => {
         if(data==200){
-            db_neo.do_query("NEW_PRODUCT", {name: new_product.name}, data);
+            db_neo.do_query("NEW_PRODUCT", {name: new_product.name}, (data) => {});
             res.sendStatus(200);
         }else{
             res.sendStatus(400);
@@ -137,7 +137,7 @@ app.post("/register_client", (req, res) => {
 
     db_mongo.do_query("FIND_CLIENT", {username: new_client.username}, (data) => {
         if(data.length==0){
-            db_neo.do_query("REGISTER_CLIENT", {username: new_client.username}, data);
+            db_neo.do_query("REGISTER_CLIENT", {username: new_client.username}, (data) => {});
             db_mongo.do_query("REGISTER_CLIENT", new_client, (data) => {
                 res.sendStatus(200);
             });
@@ -159,9 +159,6 @@ app.post('/add_purchase', (req, res) => {
     });
 
     db_mongo.do_query("FIND_PRODUCTS", products, (products_info) => {
-        console.log("Productos ", products_info);
-        console.log("Compra ", purchase_info);
-
         purchase_info.products.forEach((purchc) => {
             products_info.forEach((prdct) => {
                 if(prdct.name == purchc.name){
@@ -191,13 +188,19 @@ app.post('/add_purchase', (req, res) => {
                             
                         }
                         cost += this_cost - this_cost*discount;
-                        //db_mongo.do_query("UPDATE_INVENTORY", {name: prdct.name, units: prdct.units - purchc.amount}, (data) => {});
+                        db_mongo.do_query("UPDATE_INVENTORY", {name: prdct.name, units: prdct.units - purchc.amount}, (data) => {});
                     }
                 });
             });
-            console.log(cost);
             db_neo.do_query("AMOUNT_PURCHASE", null, (amount_purchase) => {
-                console.log(amount_purchase[0].low);
+                db_neo.do_query("ADD_PURCHASE", {id: amount_purchase[0].low, date: purchase_info.date, cost: cost}, (data) => {
+                    db_neo.do_query("RELATE_PURCHASE_CLIENT", {id: amount_purchase[0].low, username: purchase_info.client}, (data) => {
+                        purchase_info.products.forEach((purchc) => {
+                            db_neo.do_query("PRODUCT_BUYED", {id: amount_purchase[0].low, prod_name: purchc.name, amount: purchc.amount}, (data) => {});
+                            db_neo.do_query("PRODUCT_SELL", {id: amount_purchase[0].low, prod_name: purchc.name, amount: purchc.amount}, (data) => {});
+                        });
+                    });
+                });
             });
             res.sendStatus(200);
         }
