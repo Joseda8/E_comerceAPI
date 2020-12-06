@@ -79,7 +79,7 @@ app.get("/count_sales", (req, res) => {
                     products: prdct[1],
                 });
             });
-            res.json(data);
+            res.json(response);
         }
         
     });;
