@@ -238,7 +238,7 @@ app.post('/add_purchase', (req, res) => {
 
                             prdct.offer.forEach((offer) => {
                                 if(offer.info.type == "Descuento"){
-                                    discount = offer.info.condition;
+                                    discount += offer.info.condition;
                                 }
                             });
                             
