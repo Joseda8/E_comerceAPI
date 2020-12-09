@@ -1,5 +1,5 @@
 const neo4j = require('neo4j-driver');
-var driver = neo4j.driver('bolt://100.25.167.154:33138', neo4j.auth.basic('neo4j', 'lengths-buzzer-print'));
+var driver = neo4j.driver('bolt://100.25.167.154:33208', neo4j.auth.basic('neo4j', 'conveniences-installation-radiator'));
 
 //MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r
 
