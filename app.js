@@ -95,6 +95,7 @@ app.get('/common_purchase', (req, res) => {
 
     db_neo.do_query("COMMON_PURCHASE", info, (data) => {
         var response = {};
+        var response_list = []
         
         if(data.length == 0){
             res.sendStatus(404);
@@ -113,8 +114,13 @@ app.get('/common_purchase', (req, res) => {
                     response[username].products.push(client[1].properties.name);
                 }
             });
-            res.json(response);
+            for (var i in response) {
+                response_list.push(response[i]);
+            }
+
+            res.json(response_list);
         }
+    
     });;
 })
 
